@@ -1,53 +1,82 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../../../models/User';
+import { UserInputError } from 'apollo-server'
+import { validSignup, validLogin } from '../../../../utils/validators'
 
 /**
  * @desc signup mutation that handles signing up users to our application
  * @param {*} req
  */
 export const signup = async(_, req) => {
+    const {username, email, password, confirmPassword} = req.registerInput;
 
-    const {username, email, password, confirmPassword} = req;
+    // validate inputs
+    const {valid, errors} = validSignup(username, email, password, confirmPassword);
+    if (!valid) {
+        throw new UserInputError('Auth errors', {errors});
+    }
 
     try {
+        // check if user already exist
         const existingUser = await User.findOne({email});
         if (existingUser) {
-            throw new Error('User already exist!');
+            throw new UserInputError(
+                'User already exist!',
+                {
+                    errors: {
+                        userExistMessage: 'User already exist!'
+                    }
+                }
+            );
         }
-        // const hashedPassword = await bcrypt.hash(password, 12);
+        // hash the password before saving to db
+        const hashedPassword = bcrypt.hashSync(password, 12);
+        // create user object
         const user = new User({
-            username, email, password, confirmPassword
+            username,
+            email,
+            password: hashedPassword,
+            createdAt: new Date().toLocaleString()
         })
-
+        // save new user
+        // console.log(user);
         user.save();
-        return {message: 'User created successfully!'};
-    } catch (err) {
-        throw new Error(err);
+        return { ...user._doc };
+    } catch (error){
+        // console.error(error);
+        throw new Error(error);
     }
 }
 
 /**
- * @desc login mutation that handles signing into our application
+ * @desc login mutation that handles logging into our application
  * @param {*} req
  */
 export const login = async(_, req) => {
-
     const { email, password } = req;
+
+    const {valid, errors} = validLogin(email, password);
+    if (!valid) {
+        throw new UserInputError('Auth errors', {errors});
+    }
 
     try {
         const user = await User.findOne({email});
-
         if (!user) {
-            throw new Error('Unauthorized access! contact admin');
+            throw new UserInputError(
+                'Unauthorized access! contact admin',
+                { 
+                    errors: { 
+                        illegalAccessMsg: 'Unauthorized access! contact admin'
+                    }
+                }
+            );
         }
-        
         const isEqual = await bcrypt.compare(password, user.password);
-
         if (!isEqual){
             throw new Error('Invalid credentials');
         }
-
         const token = jwt.sign(
             {
                 userId: user.id,
@@ -55,11 +84,10 @@ export const login = async(_, req) => {
             },
             process.env.SECRET_KEY,
             {
-                expiresIn: 60 * 60
+                expiresIn: 10
             }
         );
-
-        return { token, message: 'Login Successfull!', status: 'success'}
+        return { token }
         // return { userId: user.id, token: token, tokenExpiry: 1}
     } catch (error) {
         throw new Error(error);
@@ -69,10 +97,12 @@ export const login = async(_, req) => {
 /**
  * @desc  returns all users in our app
  */
-export const getUsers = async() => {
+export const getUsers = async(_, req) => {
     try {
-        const users = await Users.find();
+        const users = await User.find({email: req.email});
+        
         return users;
+        
     } catch (error) {
         throw new Error(error)
     }
