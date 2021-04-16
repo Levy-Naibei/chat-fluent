@@ -7,7 +7,7 @@ const typeDefs = gql`
         username: String!
         createdAt: String!
     }
-
+    
     input RegisterInput {
         username: String!
         email: String!
@@ -33,19 +33,23 @@ const typeDefs = gql`
         tokenExpiry: Int!
     }
 
-    type AuthResponse {
+    type AlertResponse {
         message: String!
     }
-
+    
     type Query {
-        getPosts: [Post]
-        getUsers: [User]
+        getPosts: [Post!]
+        getPost(postId: ID!): Post!
+        getUsers: [User!]
+        getUser(userId: ID!): User!
     }
 
     type Mutation {
         signup(registerInput: RegisterInput): User!
         login(email: String!, password: String!): AuthData!
-
+        deleteUser(userId: ID): AlertResponse! 
+        createPost(body: String!): Post!
+        deletePost(postId: ID!): AlertResponse!
     }
 
     type Schema {

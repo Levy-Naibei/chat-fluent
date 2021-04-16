@@ -1,4 +1,4 @@
-import postResolver from './posts/reslovers';
+import postResolver from './posts';
 import authResolver from './users';
 import { merge } from 'lodash';
 

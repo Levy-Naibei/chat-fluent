@@ -1,8 +1,9 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../../../models/User';
-import { UserInputError } from 'apollo-server'
+import { AuthenticationError, UserInputError } from 'apollo-server'
 import { validSignup, validLogin } from '../../../../utils/validators'
+import { checkAuth } from '../../../../utils/check-auth';
 
 /**
  * @desc signup mutation that handles signing up users to our application
@@ -84,10 +85,10 @@ export const login = async(_, req) => {
             },
             process.env.SECRET_KEY,
             {
-                expiresIn: 10
+                expiresIn: 60 * 60
             }
         );
-        return { token }
+        return {token, ...user._doc};
         // return { userId: user.id, token: token, tokenExpiry: 1}
     } catch (error) {
         throw new Error(error);
@@ -99,15 +100,57 @@ export const login = async(_, req) => {
  */
 export const getUsers = async() => {
     try {
-        const users = await User.find();
-        console.log(users)
+        const users = await User.find().sort({ createdAt: -1});
         if (users) {
+            // console.log(users);
             return users;
         }
         else {
             throw new Error("No users!")
         }
     } catch (error) {
+        console.log(error);
         throw new Error(error)
+    }
+}
+
+/**
+ * @desc  returns a single user in our app
+ */
+ export const getUser = async(_, {userId}) => {
+    try {
+        const user = await User.findById(userId);
+        if (user) {
+            // console.log(user);
+            return user;
+        }
+        else {
+            throw new Error("User does not exist!")
+        }
+    } catch (error) {
+        console.log(error);
+        throw new Error(error)
+    }
+}
+
+
+/**
+ * @desc    deletes user by id
+ */
+export const deleteUser = async(_, {userId}, context) => {
+    // check if user is authenticated
+    const user = checkAuth(context);
+
+    try {
+        //check in db if user exists then delete user
+        const userDel = await User.findById(userId);
+        // check if user is Admin
+        if (user === isAdmin) {
+            userDel.deleteOne();   
+        } else {
+            throw new AuthenticationError('Authorization Error!');
+        }
+    } catch (error) {
+        throw new Error(error);
     }
 }
