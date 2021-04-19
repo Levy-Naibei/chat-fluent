@@ -6,6 +6,9 @@ const typeDefs = gql`
         body: String!
         username: String!
         createdAt: String!
+        comments: String!
+        likes: String!
+        user: User!
     }
     
     input RegisterInput {
@@ -21,6 +24,7 @@ const typeDefs = gql`
 
     type User {
         _id: ID!
+        token: String!
         username: String!
         email: String!
         password: String!
@@ -42,14 +46,17 @@ const typeDefs = gql`
         getPost(postId: ID!): Post!
         getUsers: [User!]
         getUser(userId: ID!): User!
+        getComments: Post!
+        getComment(commentId: ID!): Post!
     }
 
     type Mutation {
         signup(registerInput: RegisterInput): User!
-        login(email: String!, password: String!): AuthData!
+        login(email: String!, password: String!): User!
         deleteUser(userId: ID): AlertResponse! 
         createPost(body: String!): Post!
         deletePost(postId: ID!): AlertResponse!
+        addComment(body: String!): Post!
     }
 
     type Schema {

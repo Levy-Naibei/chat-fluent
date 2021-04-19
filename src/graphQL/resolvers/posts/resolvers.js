@@ -10,7 +10,7 @@ export const getPosts = async() => {
         if (!posts) {
             throw new Error('No posts found!');
         } else {
-            console.log(posts);
+            // console.log(posts);
             return posts;
         }
     } catch (error) {
@@ -25,7 +25,7 @@ export const getPost = async(_, {postId}) => {
     try {
         const post = await Post.findById({_id: postId});
         if (post) {
-            console.log(post);
+            // console.log(post);
             return post;
         } else {
             throw new Error ('Post does not exist!')
@@ -45,11 +45,11 @@ export const createPost = async(_, { body }, context) => {
         const post = new Post({
             body,
             username: user.username,
-            user: user.id,
+            user: user._id,
             createdAt: new Date().toLocaleString()
         });
+
         const newPost = await post.save();
-        // console.log(newPost.username);
         return { ...newPost._doc };
     } catch (error) {
         console.log(error)
@@ -63,7 +63,7 @@ export const createPost = async(_, { body }, context) => {
 export const deletePost = async(_, {postId}, context) => {
     const user = checkAuth(context);
     try {
-        const post = await Post.findById(postId);
+        const post = await Post.findById({_id: postId});
         if (user.username === post.username) {
             await post.deleteOne();
         } else {

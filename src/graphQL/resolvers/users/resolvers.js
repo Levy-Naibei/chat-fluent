@@ -75,19 +75,22 @@ export const login = async(_, req) => {
             );
         }
         const isEqual = await bcrypt.compare(password, user.password);
+
         if (!isEqual){
             throw new Error('Invalid credentials');
         }
         const token = jwt.sign(
             {
-                userId: user.id,
-                email: user.email
+                _id: user._id,
+                email: user.email,
+                username: user.username
             },
             process.env.SECRET_KEY,
             {
                 expiresIn: 60 * 60
             }
         );
+        
         return {token, ...user._doc};
         // return { userId: user.id, token: token, tokenExpiry: 1}
     } catch (error) {
