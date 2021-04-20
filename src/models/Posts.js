@@ -10,6 +10,13 @@ const PostSchema = new Schema({
             body: String,
             username: String,
             createdAt: String,
+            // comment: [
+            //     {
+            //         body: String,
+            //         username: String,
+            //         createdAt: String,
+            //     }
+            // ]
         }
     ],
     likes: [

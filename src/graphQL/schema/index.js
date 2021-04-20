@@ -65,8 +65,9 @@ const typeDefs = gql`
         deleteUser(userId: ID): Alert! 
         createPost(body: String!): Post!
         deletePost(postId: ID!): Alert!
-        addComment(postId: String!, body: String!): Post!
-        removeComment(postId: String!, commentId: ID!): Post!
+        addComment(postId: ID!, body: String!): Post!
+        removeComment(postId: ID!, commentId: ID!): Post!
+        likePost(postId: ID!): Post!
     }
 
     type Schema {
