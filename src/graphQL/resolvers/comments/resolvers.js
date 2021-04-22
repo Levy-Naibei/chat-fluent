@@ -140,12 +140,19 @@ export const likePost = async(_, req, context) => {
     const {username} = checkAuth(context)
 
     try {
+        // ensure post id is provided
+        if (postId.trim() === '') {
+            throw new UserInputError('Post ID must be provided!', {
+                errors: { postId: "Post ID cant be empty!"}
+            });
+        }
+
         // check if the post exist
         const post = await Post.findById(postId);
         if (post) {
             if (post.likes.find(like => like.username === username)) {
                 // post liked, unlike it
-                post.likes.filter(like => like.username !== username);
+                post.likes = post.likes.filter(like => like.username !== username);
             } else {
                 // post not liked, like it
                 post.likes.push({
