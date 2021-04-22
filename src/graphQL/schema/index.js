@@ -9,6 +9,8 @@ const typeDefs = gql`
         comments: [Comment]!
         likes: [Like]!
         user: User!
+        countOfLikes: Int!
+        countOfComments: Int!
     }
     
     type Comment {
@@ -65,7 +67,7 @@ const typeDefs = gql`
         deleteUser(userId: ID): Alert! 
         createPost(body: String!): Post!
         deletePost(postId: ID!): Alert!
-        addComment(postId: ID!, body: String!): Post!
+        addComment(postId: ID!, body: String!): Comment!
         removeComment(postId: ID!, commentId: ID!): Post!
         likePost(postId: ID!): Post!
     }

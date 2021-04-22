@@ -63,8 +63,8 @@ export const createPost = async(_, { body }, context) => {
 export const deletePost = async(_, {postId}, context) => {
     const user = checkAuth(context);
     try {
-        const post = await Post.findById({_id: postId});
-        if (user.email === post.email) {
+        const post = await Post.findById(postId);
+        if (user.username === post.username) {
             await post.deleteOne();
         } else {
             throw new AuthenticationError('Authorization Error!');
